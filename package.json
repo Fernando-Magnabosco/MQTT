@@ -12,6 +12,8 @@
     "hello": "./bin/index.js"
   },
   "dependencies": {
+    "commist": "^3.2.0",
+    "mqtt": "^5.0.5",
     "paho": "^1.0.0",
     "paho-mqtt": "^1.1.0"
   }
