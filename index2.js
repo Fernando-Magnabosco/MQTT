@@ -37,7 +37,7 @@
 
 
 // Initialize MQTT client
-var client = mqtt.connect('ws://localhost:1884');
+var client = mqtt.connect('ws://localhost:8080');
 
 // Set up event handlers for the client
 client.on('connect', function () {
@@ -48,7 +48,9 @@ client.on('connect', function () {
 });
 
 client.on('message', function (topic, message) {
-    // message is Buffer
+    if('iam ontheline ' + document.getElementsByClassName('user-id')[0].value == message.toString()) {
+        return
+    }
     console.log(message.toString());        
 });
 
@@ -58,5 +60,14 @@ document.addEventListener('keypress', function (e) {
         client.publish('World', 'Hello mqtt');
         console.log("Pedro Manfio Lill");
     }
-}
-);
+});
+
+
+setInterval(
+    () => {
+        //grab the input value
+        const [myID] = document.getElementsByClassName('user-id'); 
+        
+        client.publish('World', 'iam ontheline ' + myID.value);
+    }, 1000
+)
