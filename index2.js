@@ -1,73 +1,54 @@
-// // location.port = 5002;
-// console.log(location);
-// // Create a client instance
-// var client = new Paho.MQTT.Client(location.hostname, 1884, "clientId");
-// client.debug = true;
-// // set callback handlers
-// client.onConnectionLost = onConnectionLost;
-// client.onMessageArrived = onMessageArrived;
+function User () {
+    this.knownUsers;
+    this.client;
+    this.id;
 
+    this.init = function (id) {
+        // Initialize MQTT client
+        this.knownUsers = {};
+        this.client = mqtt.connect(MQTT_BROKER);
+        this.id = id;
 
-
-// // connect the client
-// client.connect({onSuccess: onConnect, mqttVersion: 3});
-
-
-// // called when the client connects
-// function onConnect () { 
-//   // Once a connection has been made, make a subscription and send a message.
-//   console.log("onConnect");
-//   client.subscribe("World");
-//     const message = new Paho.MQTT.Message("Hello");
-//   message.destinationName = "World";
-//   client.send(message);
-// }
-
-// // called when the client loses its connection
-// function onConnectionLost(responseObject) {
-//   if (responseObject.errorCode !== 0) {
-//     console.log("onConnectionLost:"+responseObject.errorMessage);
-//   }
-// }
-
-// // called when a message arrives
-// function onMessageArrived(message) {
-//   console.log("onMessageArrived:"+message.payloadString);
-// }
-
-
-// Initialize MQTT client
-var client = mqtt.connect('ws://localhost:8080');
-
-// Set up event handlers for the client
-client.on('connect', function () {
-    console.log('Connected to MQTT broker');
-    // Subscribe to a topic when connected
-    client.subscribe('World');
-    client.publish('World', 'Hello mqtt');
-});
-
-client.on('message', function (topic, message) {
-    if('iam ontheline ' + document.getElementsByClassName('user-id')[0].value == message.toString()) {
-        return
+        // Set up event handlers for the client
+        this.client.on('connect', this.onConnect.bind(this));
+        this.client.on('message', this.onMessage.bind(this));
     }
-    console.log(message.toString());        
-});
 
-// on key press send message
-document.addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        client.publish('World', 'Hello mqtt');
-        console.log("Pedro Manfio Lill");
+    this.onConnect = function () {
+        console.log('Connected to MQTT broker');
+
+        this.client.subscribe(USERS);
+        this.client.publish(USERS, this.id + ONLINE);
     }
-});
+
+    this.onMessage = function (topic, message) {
+        const topicHandlers = {
+            USERS: this.onUsersMessage.bind(this),
+            CHAT: this.onChatMessage.bind(this)
+        }
+
+        topicHandlers[topic](message);
+    }
+
+    this.onUsersMessage = function (message) {
+        console.log(message.toString());
+        const userId = message.toString();
+        if (!this.knownUsers[userId]) {
+            this.client.publish(USERS, this.id);
+        }
+        this.knownUsers[userId] = true;
+    }
+
+    this.onChatMessage = function (message) {
+        console.log(message.toString());
+    }
+
+    setInterval(() => {
+        console.log(this.knownUsers);
+    }, 1000);
+}
 
 
-setInterval(
-    () => {
-        //grab the input value
-        const [myID] = document.getElementsByClassName('user-id'); 
-        
-        client.publish('World', 'iam ontheline ' + myID.value);
-    }, 1000
-)
+const me = new User();
+const uuid = Math.random().toString(36).substring(7);
+me.init(uuid);
