@@ -1,13 +1,20 @@
+import constants from './constants.js';
+var C = new constants();
+
 function User () {
     this.knownUsers;
     this.client;
     this.id;
+    this.connectMessage;
+    this.disconnectMessage;
 
     this.init = function (id) {
         // Initialize MQTT client
         this.knownUsers = {};
-        this.client = mqtt.connect(MQTT_BROKER);
+        this.client = mqtt.connect(C.MQTT_BROKER);
         this.id = id;
+        this.connectMessage = this.id + ' ' + C.ONLINE;
+        this.disconnectMessage = this.id + ' ' + C.OFFLINE;
 
         // Set up event handlers for the client
         this.client.on('connect', this.onConnect.bind(this));
@@ -17,8 +24,8 @@ function User () {
     this.onConnect = function () {
         console.log('Connected to MQTT broker');
 
-        this.client.subscribe(USERS);
-        this.client.publish(USERS, this.id + ONLINE);
+        this.client.subscribe(C.USERS);
+        this.client.publish(C.USERS, this.connectMessage);
     }
 
     this.onMessage = function (topic, message) {
@@ -31,16 +38,19 @@ function User () {
     }
 
     this.onUsersMessage = function (message) {
-        console.log(message.toString());
-        const userId = message.toString();
+        const [userId, status] = message.toString().split(' ');
         if (!this.knownUsers[userId]) {
-            this.client.publish(USERS, this.id);
+            this.client.publish(C.USERS, this.connectMessage);
         }
-        this.knownUsers[userId] = true;
+        this.knownUsers[userId] = status;
     }
 
     this.onChatMessage = function (message) {
-        console.log(message.toString());
+
+    }
+
+    this.onDisconnect = function () {
+        this.client.publish(C.USERS, this.disconnectMessage);
     }
 
     setInterval(() => {

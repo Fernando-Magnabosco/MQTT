@@ -1,17 +1,19 @@
-
-// status
-const ONLINE = 'online';
-const OFFLINE = 'offline';
-
-
+function constants () {
+    // status
+    this.ONLINE = 'online';
+    this.OFFLINE = 'offline';
 
 
-// control topics
-const USERS = 'USERS';
-const CHAT = 'CHAT';
 
 
-// adresses
+    // control topics
+    this.USERS = 'USERS';
+    this.CHAT = 'CHAT';
 
-const MQTT_BROKER = 'ws://localhost:8080';
 
+    // adresses
+    this.MQTT_BROKER = 'ws://localhost:8080';
+
+}
+
+export default constants;
