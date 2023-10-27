@@ -3,15 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script type="module" src="index2.js"></script>
+
+    <style>
+        /* Adicione estilos personalizados aqui para tornar a página mais bonita. */
+        .container {
+            margin-top: 20px;
+            background-color: bisque;
+            padding: 20px;
+            border-radius: 10px;
+                
+        }
+    </style>
+
+
+    <title>Uma boa prosa</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.0.5/mqtt.js" type="text/javascript"></script>
+    <style>
+        /* Adicione estilos personalizados aqui para tornar a página mais bonita. */
+    </style>
 </head>
 <body>
-    
+    <div class="container">
+        <h1>Aquela lagarteada</h1>
+        <p>Uma boa prosa</p>
 
-    <input class="user-id" type="text">
+        <div>
+            <label for="user">Usuário</label>
+            <input type="text" id="user" placeholder="Digite seu Id">
+        </div>
 
-    <script type="module" src="index2.js"></script>
-    <p>sdoadkosa</p>
+        <button class="btn btn-danger mt-3" id="desconectarBtn">Desconectar</button>
+
+        <div class="row">
+            <div class="col-md-4">
+                <h1>Lista de Usuários</h1>
+                <p>Lista de usuários conectados</p>
+                <ul class="list-group" id="userList">
+                    <!-- Popule a lista de usuários aqui com um botão "Sim" ou "Não" ao lado. -->
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h1>Lista de Grupos</h1>
+                <p>Lista de grupos</p>
+                <!-- Adicione a lista de grupos aqui. -->
+            </div>
+            <div class="col-md-4">
+                <!-- Terceira coluna, adicione o conteúdo desejado aqui. -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Seu código JavaScript para interagir com os usuários e grupos aqui.
+    </script>
 </body>
 </html>
