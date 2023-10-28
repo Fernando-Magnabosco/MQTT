@@ -6,13 +6,16 @@ function User () {
     this.requestedUsers;
     this.chatUsers;
     this.client;
+    this.requestHistory;
     this.id;
     this.connectMessage;
     this.disconnectMessage;
 
     this.ui = {
         userList: null,
-        userId: null
+        userId: null,
+        toggleConnectBtn: null,
+
     }
 
     this.init = function (id) {
@@ -20,21 +23,34 @@ function User () {
         this.knownUsers = {};
         this.requestedUsers = {};
         this.chatUsers = {};
-        this.client = mqtt.connect(C.MQTT_BROKER);
+        this.requestHistory = {};
         this.id = id;
         this.connectMessage = this.id + ' ' + C.ONLINE;
         this.disconnectMessage = this.id + ' ' + C.OFFLINE;
 
+        this.connect();
+        this.initUI();
+    }
+
+    this.connect = function () {
+        this.client = mqtt.connect(C.MQTT_BROKER);
         // Set up event handlers for the client
         this.client.on('connect', this.onConnect.bind(this));
         this.client.on('message', this.onMessage.bind(this));
-
-        this.initUI();
     }
+
+    this.disconnect = function () {
+        this.client.publish(C.USERS, this.disconnectMessage);
+        this.client.end();
+    }
+
 
     this.initUI = function () {
         this.ui.userList = $('#userList');
         this.ui.userId = $('#userId');
+        this.ui.toggleConnectBtn = $('#toggleConnectBtn');
+
+        this.ui.toggleConnectBtn.on('click', this.onToggleConnect.bind(this));
         this.ui.userList.on('click', '.start-a-chat', this.onStartChatClick.bind(this));
         this.ui.userList.on('click', '.user-accept', this.onAcceptClick.bind(this));
     }
@@ -85,24 +101,27 @@ function User () {
         if (!this.knownUsers[userId]) {
             this.client.publish(C.USERS, this.connectMessage);
             this.knownUsers[userId] = status;
-            this.ui.userList.append(`<li id="${userId}" role="button" class="list-group-item">
-            <div class="d-flex justify-content-between">
-            <span>${userId}</span>
-            <div>
-            <button data-user-id="${userId}" type="button" class="btn btn-primary btn-sm float-right user-accept d-none">Aceitar solicitacao</button>
-            <button data-user-id="${userId}" type="button" class="btn btn-primary btn-sm float-right start-a-chat">Comecar novo chat</button>
-            <button data-user-id="${userId}" type="button" class="btn btn-primary btn-sm float-right user-chat d-none">Chat</button>
-            </div>
-            </div>
-            </li>`);
+            this.ui.userList.append(
+                `<li id="${userId}" role="button" class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <span>${userId}</span>
+                            <span class="badge ${status === 'online' ? 'bg-primary' : 'bg-danger'} badge-pill">${status}</span>
+                        </div>
+                        <div>
+                            <button data-user-id="${userId}" type="button" class="btn btn-primary btn-sm float-right user-accept d-none">Aceitar solicitacao</button>
+                            <button data-user-id="${userId}" type="button" class="btn btn-primary btn-sm float-right start-a-chat">Comecar novo chat</button>
+                            <button data-user-id="${userId}" type="button" class="btn btn-primary btn-sm float-right user-chat d-none">Chat</button>
+                        </div>
+                    </div>
+                </li>`);
         }
 
         if (status === C.OFFLINE) {
-            this.ui.userList.find(`#${userId}`).remove();
+            this.ui.userList.find(`#${userId}`).find('.badge').removeClass('bg-primary').addClass('bg-danger').text(status);
             return;
         }
-
-
+        this.ui.userList.find(`#${userId}`).find('.badge').removeClass('bg-danger').addClass('bg-primary').text(status);
     }
 
     this.onChatMessage = function (message) {
@@ -125,8 +144,17 @@ function User () {
         this.ui.userList.find(`#${userId} .user-accept`).removeClass('d-none');
     }
 
-    this.onDisconnect = function () {
-        this.client.publish(C.USERS, this.disconnectMessage);
+    this.onToggleConnect = function (event) {
+
+        if (this.ui.toggleConnectBtn.hasClass('btn-success')) {
+
+            this.connect();
+            this.ui.toggleConnectBtn.removeClass('btn-success').addClass('btn-danger').text('Desconectar');
+            return;
+        }
+
+        this.disconnect();
+        this.ui.toggleConnectBtn.removeClass('btn-danger').addClass('btn-success').text('Conectar');
     }
 
     // setInterval(() => {
