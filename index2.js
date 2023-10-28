@@ -67,15 +67,15 @@ function User () {
 
         if (!this.knownUsers[userId]) {
             this.client.publish(C.USERS, this.connectMessage);
+            this.knownUsers[userId] = status;
+            this.ui.userList.append(`<li id="${userId}" role="button" class="list-group-item">${userId}</li>`);
         }
-        this.knownUsers[userId] = status;
 
         if (status === C.OFFLINE) {
             this.ui.userList.find(`#${userId}`).remove();
             return;
         }
 
-        this.ui.userList.append(`<li id="${userId}" role="button">${userId}</li>`);
 
     }
 
