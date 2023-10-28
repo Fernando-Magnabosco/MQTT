@@ -9,7 +9,7 @@ function constants () {
     // control topics
     this.USERS = 'USERS';
     this.CHAT = 'CHAT';
-    this.OWN = '_Control';
+    this.CONTROL = '_Control';
 
 
     // adresses
