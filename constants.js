@@ -9,6 +9,7 @@ function constants () {
     // control topics
     this.USERS = 'USERS';
     this.CHAT = 'CHAT';
+    this.GROUPS = 'GROUPS';
     this.CONTROL = '_Control';
 
 

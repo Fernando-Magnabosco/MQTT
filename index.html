@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,10 +15,11 @@
             background-color: bisque;
             padding: 20px;
             border-radius: 10px;
-                
+
         }
     </style>
 </head>
+
 <body>
     <div class="container">
 
@@ -34,16 +36,21 @@
                 <h1>Lista de Usuários</h1>
                 <p>Lista de usuários conectados</p>
                 <ul class="list-group" id="userList">
-                    
+
                 </ul>
             </div>
             <div class="col-4">
                 <h1>Lista de Grupos</h1>
                 <p>Lista de grupos</p>
-                
+                <ul class="list-group" id="groupList">
+                </ul>
+
             </div>
             <div class="col-4">
-                <!-- Terceira coluna, adicione o conteúdo desejado aqui. -->
+                <h1>Criar grupo</h1>
+                <p> rimas de um velho diariooooooooo </p>
+                <input type="text" placeholder="Nome do grupo" id="groupName">
+                <button class=" btn btn-primary" data-click="createGroup" id="createGroupBtn">Criar Grupo</button>
             </div>
         </div>
     </div>
@@ -53,4 +60,5 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 </body>
+
 </html>

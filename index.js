@@ -10,9 +10,11 @@ function User () {
     this.id;
     this.connectMessage;
     this.disconnectMessage;
+    this.groups;
 
     this.ui = {
         userList: null,
+        groupList: null,
         userId: null,
         toggleConnectBtn: null,
 
@@ -27,7 +29,7 @@ function User () {
         this.id = id;
         this.connectMessage = this.id + ' ' + C.ONLINE;
         this.disconnectMessage = this.id + ' ' + C.OFFLINE;
-
+        this.groups = {};
         this.connect();
         this.initUI();
     }
@@ -44,15 +46,17 @@ function User () {
         this.client.end();
     }
 
-
     this.initUI = function () {
         this.ui.userList = $('#userList');
+        this.ui.groupList = $('#groupList');
         this.ui.userId = $('#userId');
         this.ui.toggleConnectBtn = $('#toggleConnectBtn');
+        this.ui.createGroupBtn = $('#createGroupBtn');
 
         this.ui.toggleConnectBtn.on('click', this.onToggleConnect.bind(this));
         this.ui.userList.on('click', '.start-a-chat', this.onStartChatClick.bind(this));
         this.ui.userList.on('click', '.user-accept', this.onAcceptClick.bind(this));
+        this.ui.createGroupBtn.on('click', this.onCreateGroupClick.bind(this));
     }
 
     this.onStartChatClick = function (event) {
@@ -69,13 +73,14 @@ function User () {
         this.client.publish(userId + C.CONTROL, newTopic);
         this.ui.userList.find(`#${userId} .user-chat`).removeClass('d-none');
         this.ui.userList.find(`#${userId} .user-accept`).addClass('d-none');
-        this.ui.userList.find(`#${userId} .start-a-chat`).addClass('d-none');  
+        this.ui.userList.find(`#${userId} .start-a-chat`).addClass('d-none');
     }
 
     this.onConnect = function () {
         console.log('Connected to MQTT broker');
 
         this.client.subscribe(C.USERS);
+        this.client.subscribe(C.GROUPS);
         this.client.subscribe(this.id + C.CONTROL);
         this.client.publish(C.USERS, this.connectMessage);
 
@@ -86,8 +91,10 @@ function User () {
         const controlTopicHandlers = {
             [C.USERS]: this.onUsersMessage.bind(this),
             [C.CHAT]: this.onChatMessage.bind(this),
+            [C.GROUPS]: this.onGroupMessage.bind(this),
             [this.id + C.CONTROL]: this.onRequest.bind(this)
         }
+
         if (controlTopicHandlers[topic]) {
             controlTopicHandlers[topic](message);
             return;
@@ -128,6 +135,13 @@ function User () {
 
     }
 
+    this.onGroupMessage = function (message) {
+        console.log(message);
+        const grupo = JSON.parse(message.toString());
+        if (grupo.usuarios.indexOf(this.id) !== -1) return;
+        this.renderGroup(grupo, false);
+    }
+
     this.onRequest = function (message) {
         const [userId] = message.toString().split('_');
 
@@ -145,7 +159,6 @@ function User () {
     }
 
     this.onToggleConnect = function (event) {
-
         if (this.ui.toggleConnectBtn.hasClass('btn-success')) {
 
             this.connect();
@@ -157,9 +170,54 @@ function User () {
         this.ui.toggleConnectBtn.removeClass('btn-danger').addClass('btn-success').text('Conectar');
     }
 
-    // setInterval(() => {
-    //     console.log(this.knownUsers);
-    // }, 1000);
+    this.onCreateGroupClick = function (event) {
+        const nomeDoGrupo = $('#groupName').val();
+        const grupo = {nome: nomeDoGrupo, usuarios: [this.id], dono: this.id};
+        this.client.publish(C.GROUPS, JSON.stringify(grupo));
+        this.renderGroup(grupo);
+    }
+
+    this.renderGroup = function (grupo, isMember = true) {
+        if (this.groups[grupo.nome]) return;
+        this.groups[grupo.nome] = grupo;
+        this.ui.groupList.append(
+            `<li id="${grupo.nome}" role="button" class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <span>${grupo.nome}</span>
+                    </div>
+                    <div>
+                    <span> ${grupo.dono} </span>
+                    </div>
+                    ${!isMember ?
+                `<div class="serMembro btn btn-primary" data-group-name="${grupo.nome}" data-dono="${grupo.dono}"type="button" class="btn btn-primary btn-sm float-right">Ser membro</div>`
+
+                : ''}
+                    <button class="verMembros btn btn-primary" data-group-name="${grupo.nome}" type="button" class="btn btn-primary btn-sm float-right">Ver grupo</button>    
+                </div>
+            </li>`);
+
+        // group list ultimo elemento
+        const last = this.ui.groupList.find('li:last-child');
+        const btnVerMembros = last.find('.verMembros');
+        const btnSerMembro = last.find('.serMembro');
+        btnVerMembros.on('click', this.onVerMembrosClick.bind(this));
+        btnSerMembro.on('click', this.onSerMembroClick.bind(this));
+    }
+
+    this.onVerMembrosClick = function (event) {
+        const nomeDoGrupo = $(event.target).data('group-name');
+        console.log(nomeDoGrupo, this.groups[nomeDoGrupo]);
+    }
+
+    this.onSerMembroClick = function (event) {
+        const nomeDoGrupo = $(event.target).data('group-name');
+        const donoDoGrupo = $(event.target).data('dono');
+
+        this.client.publish(donoDoGrupo + C.CONTROL, nomeDoGrupo);
+
+    }
+
 }
 
 
