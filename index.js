@@ -26,7 +26,7 @@ function User () {
         this.knownUsers = {};
         this.requestedUsers = {};
         this.chatUsers = {};
-        this.requestHistory = {};
+        this.requestHistory = [];
         this.messageHistory = {};
         this.id = id;
         this.connectMessage = this.id + ' ' + C.ONLINE;
@@ -190,7 +190,7 @@ function User () {
     this.onRequest = function (message) {
         const [userId] = message.toString().split('_');
 
-        this.requestHistory.push(userId + new Date().getTime());
+        this.requestHistory.push(`${userId} solicitou as ${new Date().toLocaleString()}`);
 
         if (this.requestedUsers[userId]) {
             this.requestedUsers[userId] = false;
