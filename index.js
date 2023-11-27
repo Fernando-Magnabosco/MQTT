@@ -54,12 +54,14 @@ function User () {
         this.ui.userId = $('#userId');
         this.ui.toggleConnectBtn = $('#toggleConnectBtn');
         this.ui.createGroupBtn = $('#createGroupBtn');
+        this.ui.requestHitoryBtn = $('#requestHistoryBtn');
 
         this.ui.toggleConnectBtn.on('click', this.onToggleConnect.bind(this));
         this.ui.userList.on('click', '.start-a-chat', this.onStartChatClick.bind(this));
         this.ui.userList.on('click', '.user-accept', this.onAcceptClick.bind(this));
         this.ui.userList.on('click', '.user-chat', this.onChatClick.bind(this));
         this.ui.createGroupBtn.on('click', this.onCreateGroupClick.bind(this));
+        this.ui.requestHitoryBtn.on('click', this.onRequestHistoryClick.bind(this));
     }
 
     this.onStartChatClick = function (event) {
@@ -188,6 +190,8 @@ function User () {
     this.onRequest = function (message) {
         const [userId] = message.toString().split('_');
 
+        this.requestHistory.push(userId + new Date().getTime());
+
         if (this.requestedUsers[userId]) {
             this.requestedUsers[userId] = false;
             this.chatUsers[userId] = message.toString();
@@ -219,6 +223,10 @@ function User () {
         const grupo = {nome: nomeDoGrupo, usuarios: [this.id], dono: this.id};
         this.client.publish(C.GROUPS, JSON.stringify(grupo));
         this.renderGroup(grupo);
+    }
+
+    this.onRequestHistoryClick = function (event) {
+        console.log(this.requestHistory);
     }
 
     this.renderGroup = function (grupo, isMember = true) {
