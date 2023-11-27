@@ -55,11 +55,13 @@ function User () {
         this.ui.toggleConnectBtn = $('#toggleConnectBtn');
         this.ui.createGroupBtn = $('#createGroupBtn');
         this.ui.requestHitoryBtn = $('#requestHistoryBtn');
+        this.ui.chatBox = $('#chatBox');
 
         this.ui.toggleConnectBtn.on('click', this.onToggleConnect.bind(this));
         this.ui.userList.on('click', '.start-a-chat', this.onStartChatClick.bind(this));
         this.ui.userList.on('click', '.user-accept', this.onAcceptClick.bind(this));
         this.ui.userList.on('click', '.user-chat', this.onChatClick.bind(this));
+        this.ui.userList.on('click', '.see-chat', this.seeChat.bind(this));
         this.ui.createGroupBtn.on('click', this.onCreateGroupClick.bind(this));
         this.ui.requestHitoryBtn.on('click', this.onRequestHistoryClick.bind(this));
     }
@@ -78,6 +80,7 @@ function User () {
         this.chatUsers[userId] = newTopic;
         this.client.publish(userId + C.CONTROL, newTopic);
         this.ui.userList.find(`#${userId} .user-chat`).removeClass('d-none');
+        this.ui.userList.find(`#${userId} .see-chat`).removeClass('d-none');
         this.ui.userList.find(`#${userId} .user-accept`).addClass('d-none');
         this.ui.userList.find(`#${userId} .start-a-chat`).addClass('d-none');
     }
@@ -85,7 +88,7 @@ function User () {
     this.onChatClick = function (event) {
         const userId = $(event.target).data('user-id');
 
-        const inputBox = $(`<div class="input-group mb-3">
+        const inputBox = $(`<div class="input-group mb-3 mt-1">
         <input type="text" class="form-control" placeholder="Digite sua mensagem" aria-label="Recipient's username" aria-describedby="button-addon2">
         <button class="btn btn-outline-secondary" type="button" id="button-addon2">Enviar</button>
         </div>`);
@@ -100,6 +103,8 @@ function User () {
 
         const message = JSON.stringify({sender: this.id, content: content, timestamp: new Date().getTime()});
         this.client.publish(userTopic, message);
+
+        $(event.target).parent().remove();
     }
 
     this.onConnect = function () {
@@ -136,8 +141,27 @@ function User () {
         }
 
         this.messageHistory[topic].push({sender, content, timestamp: new Date(timestamp).toLocaleString()});
-        console.log(this.messageHistory);
+    }
 
+    this.seeChat = function (event) {
+        const topic = this.chatUsers[$(event.target).data('user-id')];
+        const chat = this.messageHistory[topic];
+        const chatBox = $(`<div class="chat-box"></div>`);
+        if (!chat) return;
+        chat.forEach(message => {
+            chatBox.append(`
+            <div class="card mt-1">
+                <div class="card-body">
+                    <h5 class="card-title">${message.sender}</h5>
+                    <p class="card-text">${message.content}</p>
+                </div>
+                <div class="card-footer text-muted">
+                    ${message.timestamp}
+                </div>
+            </div>`);
+        });
+
+        this.ui.chatBox.html(chatBox);
     }
 
     this.onUsersMessage = function (message) {
@@ -158,6 +182,7 @@ function User () {
                             <button data-user-id="${userId}" type="button" class="btn btn-primary btn-sm float-right user-accept d-none">Aceitar solicitacao</button>
                             <button data-user-id="${userId}" type="button" class="btn btn-primary btn-sm float-right start-a-chat">Comecar novo chat</button>
                             <button data-user-id="${userId}" type="button" class="btn btn-primary btn-sm float-right user-chat d-none">Chat</button>
+                            <button data-user-id="${userId}" type="button" class="btn btn-primary btn-sm float-right see-chat d-none">Ver conversas</button>
                         </div>
                     </div>
                 </li>`);
@@ -191,6 +216,7 @@ function User () {
             this.chatUsers[userId] = message.toString();
             this.client.subscribe(message.toString());
             this.ui.userList.find(`#${userId} .user-chat`).removeClass('d-none');
+            this.ui.userList.find(`#${userId} .see-chat`).removeClass('d-none');
             this.ui.userList.find(`#${userId} .user-accept`).addClass('d-none');
             this.ui.userList.find(`#${userId} .start-a-chat`).addClass('d-none');
             return;
