@@ -135,7 +135,7 @@ function User () {
         }
 
         const [sender, receiver, timestamp] = topic.split('_');
-        if (this.id !== receiver) return;
+        if (this.id !== receiver || this.id === sender) return;
 
         if (!this.messageHistory[sender]) {
             this.messageHistory[sender] = [];
