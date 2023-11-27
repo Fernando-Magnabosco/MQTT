@@ -96,16 +96,10 @@ function User () {
     this.onSendMessage = function (event) {
         const userId = $(event.target).parent().parent().attr('id');
         const userTopic = this.chatUsers[userId];
-        const message = $(event.target).parent().find('input').val();
+        const content = $(event.target).parent().find('input').val();
+
+        const message = JSON.stringify({sender: this.id, content: content, timestamp: new Date().getTime()});
         this.client.publish(userTopic, message);
-
-        if (!this.messageHistory[userId]) {
-            this.messageHistory[userId] = [];
-        }
-        this.messageHistory[userId].push(message);
-        console.log(this.messageHistory);
-
-        $(event.target).parent().remove();
     }
 
     this.onConnect = function () {
@@ -134,14 +128,14 @@ function User () {
             return
         }
 
-        const [sender, receiver, timestamp] = topic.split('_');
-        if (this.id !== receiver || this.id === sender) return;
 
-        if (!this.messageHistory[sender]) {
-            this.messageHistory[sender] = [];
+        const {sender, content, timestamp} = JSON.parse(message.toString());
+
+        if (!this.messageHistory[topic]) {
+            this.messageHistory[topic] = [];
         }
 
-        this.messageHistory[sender].push(message.toString());
+        this.messageHistory[topic].push({sender, content, timestamp: new Date(timestamp).toLocaleString()});
         console.log(this.messageHistory);
 
     }
