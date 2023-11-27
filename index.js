@@ -7,6 +7,7 @@ function User () {
     this.chatUsers;
     this.client;
     this.requestHistory;
+    this.messageHistory;
     this.id;
     this.connectMessage;
     this.disconnectMessage;
@@ -26,6 +27,7 @@ function User () {
         this.requestedUsers = {};
         this.chatUsers = {};
         this.requestHistory = {};
+        this.messageHistory = {};
         this.id = id;
         this.connectMessage = this.id + ' ' + C.ONLINE;
         this.disconnectMessage = this.id + ' ' + C.OFFLINE;
@@ -56,6 +58,7 @@ function User () {
         this.ui.toggleConnectBtn.on('click', this.onToggleConnect.bind(this));
         this.ui.userList.on('click', '.start-a-chat', this.onStartChatClick.bind(this));
         this.ui.userList.on('click', '.user-accept', this.onAcceptClick.bind(this));
+        this.ui.userList.on('click', '.user-chat', this.onChatClick.bind(this));
         this.ui.createGroupBtn.on('click', this.onCreateGroupClick.bind(this));
     }
 
@@ -70,10 +73,37 @@ function User () {
         const userId = $(event.target).data('user-id');
         const newTopic = `${this.id}_${userId}_${new Date().getTime()}`;
         this.client.subscribe(newTopic);
+        this.chatUsers[userId] = newTopic;
         this.client.publish(userId + C.CONTROL, newTopic);
         this.ui.userList.find(`#${userId} .user-chat`).removeClass('d-none');
         this.ui.userList.find(`#${userId} .user-accept`).addClass('d-none');
         this.ui.userList.find(`#${userId} .start-a-chat`).addClass('d-none');
+    }
+
+    this.onChatClick = function (event) {
+        const userId = $(event.target).data('user-id');
+
+        const inputBox = $(`<div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Digite sua mensagem" aria-label="Recipient's username" aria-describedby="button-addon2">
+        <button class="btn btn-outline-secondary" type="button" id="button-addon2">Enviar</button>
+        </div>`);
+        inputBox.on('click', '#button-addon2', this.onSendMessage.bind(this));
+        this.ui.userList.find(`#${userId}`).append(inputBox);
+    }
+
+    this.onSendMessage = function (event) {
+        const userId = $(event.target).parent().parent().attr('id');
+        const userTopic = this.chatUsers[userId];
+        const message = $(event.target).parent().find('input').val();
+        this.client.publish(userTopic, message);
+
+        if (!this.messageHistory[userId]) {
+            this.messageHistory[userId] = [];
+        }
+        this.messageHistory[userId].push(message);
+        console.log(this.messageHistory);
+
+        $(event.target).parent().remove();
     }
 
     this.onConnect = function () {
@@ -95,10 +125,23 @@ function User () {
             [this.id + C.CONTROL]: this.onRequest.bind(this)
         }
 
+        console.log('Received message:', topic, message.toString());
+
         if (controlTopicHandlers[topic]) {
             controlTopicHandlers[topic](message);
-            return;
+            return
         }
+
+        const [sender, receiver, timestamp] = topic.split('_');
+        if (this.id !== receiver) return;
+
+        if (!this.messageHistory[sender]) {
+            this.messageHistory[sender] = [];
+        }
+
+        this.messageHistory[sender].push(message.toString());
+        console.log(this.messageHistory);
+
     }
 
     this.onUsersMessage = function (message) {
@@ -147,7 +190,7 @@ function User () {
 
         if (this.requestedUsers[userId]) {
             this.requestedUsers[userId] = false;
-            this.chatUsers[userId] = true;
+            this.chatUsers[userId] = message.toString();
             this.client.subscribe(message.toString());
             this.ui.userList.find(`#${userId} .user-chat`).removeClass('d-none');
             this.ui.userList.find(`#${userId} .user-accept`).addClass('d-none');
@@ -156,6 +199,7 @@ function User () {
         }
 
         this.ui.userList.find(`#${userId} .user-accept`).removeClass('d-none');
+        this.ui.userList.find(`#${userId} .start-a-chat`).addClass('d-none');
     }
 
     this.onToggleConnect = function (event) {
@@ -217,6 +261,11 @@ function User () {
         this.client.publish(donoDoGrupo + C.CONTROL, nomeDoGrupo);
 
     }
+
+    setInterval(() => {
+        // console.log(this.chatUsers);
+
+    }, 1000);
 
 }
 
