@@ -208,17 +208,17 @@ function User () {
         const messageClass = isCurrentUser ? 'current-user-message' : 'other-user-message';
 
         chatBox.append(`
-            <div class="card mt-1 chat-message ${messageClass}">
+            <div class="form-group row card mt-1 chat-message ${messageClass}">
                 <div class="useravatar">
                     <span class="rounded-circle d-flex justify-content-center align-items-center bg-dark text-white" style="width: 35px; height: 35px; font-size: 1.2rem; margin-bottom: 5px;">
-                        <i class="fas fa-user"></i> ${userId.charAt(0).toUpperCase() + userId.charAt(1).toUpperCase()}
+                        <i class="fas fa-user"></i> ${message.sender.charAt(0).toUpperCase() + message.sender.charAt(1).toUpperCase()}
                     </span>
                 </div>
-                <div class="message-bubble">
+                <div class="message-bubble col">
                     <h5 class="card-text">${message.content}</h5>
-                </div>
-                <div class="card-footer text-muted" style="color: #000000 !important;">
-                    <p class="card-time">${message.timestamp}</p>
+                    <div class="card-footer text-muted" style="color: #000000 !important;">
+                        <p class="card-time">${message.timestamp}</p>
+                    </div>
                 </div>
             </div>`);
     });
