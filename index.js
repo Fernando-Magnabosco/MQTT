@@ -89,7 +89,6 @@ function User () {
     this.onChatClick = function (event) {
         const userId = $(event.target).data('user-id');
     
-        // Criar o modal
         const inputBox = `
             <div class="modal fade" id="chatModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
@@ -198,7 +197,7 @@ function User () {
     }
 
     this.seeChat = function (event) {
-    const userId = this.id; // Obtém o ID do usuário atual
+    const userId = this.id; 
     const topic = this.chatUsers[$(event.target).data('user-id')];
     const chat = this.messageHistory[topic];
     const chatBox = $(`<div class="chat-box"></div>`);
@@ -206,11 +205,9 @@ function User () {
     if (!chat) return;
 
     chat.forEach(message => {
-        // Adiciona uma classe para distinguir as mensagens do remetente atual
         const isCurrentUser = message.sender === userId;
         const messageClass = isCurrentUser ? 'current-user-message' : 'other-user-message';
 
-        // Adiciona a mensagem ao chatBox com a classe apropriada
         chatBox.append(`
             <div class="card mt-1 chat-message ${messageClass}">
                 <div class="useravatar">
